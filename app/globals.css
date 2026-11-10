@@ -959,6 +959,8 @@ html.no-custom-cursor .cursor-dot,html.no-custom-cursor .cursor-ring{ display: n
   font-size: .82rem; color: rgba(246,238,220,.55);
 }
 .footer-credit{ color: rgba(246,238,220,.7); font-size: 1.15rem; }
+.footer-credit a{ color: var(--orange); text-decoration: underline; text-underline-offset: 3px; transition: color .2s ease, opacity .2s ease; }
+.footer-credit a:hover{ color: var(--orange-2); opacity: .9; }
 
 /* ------------------------------------------------------------
    20. CHILI DRAG + CONFETTI

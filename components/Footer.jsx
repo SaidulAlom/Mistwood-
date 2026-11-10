@@ -33,7 +33,7 @@ export default function Footer() {
 
         <div className="footer-bottom">
           <p>© 2026 {SITE_NAME} · {ADDRESS_LOCALITY}, {ADDRESS_REGION} · {SITE_TAGLINE}.</p>
-          <p className="footer-credit handwritten">Made with chili oil &amp; <span style={{ color: '#D7332B' }}>♥</span> in Northeast</p>
+          <p className="footer-credit handwritten">Made with chili oil &amp; <span style={{ color: '#D7332B' }}>♥</span> by <a href="https://www.queensguard.tech/" target="_blank" rel="noopener noreferrer">Queen&apos;s Guard</a></p>
         </div>
       </footer>
     </>
