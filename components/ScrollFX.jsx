@@ -455,79 +455,134 @@ export default function ScrollFX() {
         });
       }
 
-      /* ---------- 5f. "TO …" PANELS ---------- */
-      if (!reduceMotion) {
-        document.querySelectorAll('[data-to]').forEach((block) => {
-          const imgWrap = block.querySelector('.to-img');
-          const img = imgWrap?.querySelector('img');
+      /* ---------- 5f. "TO …" SEQUENCE (PINNED SCROLL-TRIGGERED PHRASES) ---------- */
+      const sequence = document.querySelector('[data-to-sequence]');
+      if (sequence && !reduceMotion) {
+        const phrases = Array.from(sequence.querySelectorAll('.to-phrase'));
+        const bgItems = Array.from(sequence.querySelectorAll('.to-bg-item'));
+        const trackerBar = sequence.querySelector('#toTrackerBar');
+        const trackerStep = sequence.querySelector('#toTrackerStep');
 
-          const fillWord = block.querySelector('.to-fill');
-          if (fillWord) {
-            splitText(fillWord);
-            const fChars = fillWord.querySelectorAll('.char');
-            gsap.set(fChars, { yPercent: 115 });
-            gsap.to(fChars, {
-              yPercent: 0,
-              stagger: 0.05,
-              duration: 0.9,
-              ease: 'power4.out',
-              scrollTrigger: { trigger: block, start: 'top 65%' },
-            });
-          }
+        // Initial setup:
+        // Phrase 0 starts prominently centered and visible
+        gsap.set(phrases[0], { yPercent: 0, opacity: 1, scale: 1 });
+        if (bgItems[0]) gsap.set(bgItems[0], { opacity: 1, scale: 1.05 });
+        if (trackerBar) gsap.set(trackerBar, { scaleX: 0.33 });
+        if (trackerStep) trackerStep.textContent = '01';
 
-          const out = block.querySelector('.to-out');
-          if (out) {
-            gsap.from(out, {
-              opacity: 0,
-              y: 30,
-              duration: 0.9,
-              ease: 'power3.out',
-              scrollTrigger: { trigger: block, start: 'top 70%' },
-            });
-          }
+        // Subsequent phrases start off below the stage, hidden
+        for (let i = 1; i < phrases.length; i++) {
+          gsap.set(phrases[i], { yPercent: 75, opacity: 0, scale: 1.04 });
+          if (bgItems[i]) gsap.set(bgItems[i], { opacity: 0, scale: 1.08 });
+        }
 
-          const meta = [block.querySelector('.to-num'), block.querySelector('.to-cap')].filter(Boolean);
-          if (meta.length) {
-            gsap.from(meta, {
-              opacity: 0,
-              y: 24,
-              duration: 0.8,
-              stagger: 0.1,
-              ease: 'power3.out',
-              scrollTrigger: { trigger: block, start: 'top 62%' },
-            });
-          }
-
-          if (imgWrap) {
-            gsap.fromTo(
-              imgWrap,
-              { clipPath: 'inset(0 0 100% 0)' },
-              {
-                clipPath: 'inset(0 0 0% 0)',
-                duration: 1.2,
-                ease: 'power3.out',
-                scrollTrigger: { trigger: block, start: 'top 80%' },
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sequence,
+            start: 'top top',
+            end: '+=280%',
+            pin: true,
+            scrub: 0.8,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              if (!trackerStep) return;
+              const p = self.progress;
+              if (p < 0.35) {
+                if (trackerStep.textContent !== '01') trackerStep.textContent = '01';
+              } else if (p < 0.68) {
+                if (trackerStep.textContent !== '02') trackerStep.textContent = '02';
+              } else {
+                if (trackerStep.textContent !== '03') trackerStep.textContent = '03';
               }
-            );
-          }
-
-          if (img) {
-            gsap.to(img, {
-              yPercent: 16,
-              ease: 'none',
-              scrollTrigger: { trigger: block, start: 'top bottom', end: 'bottom top', scrub: true },
-            });
-          }
-
-          const inner = block.querySelector('.to-inner');
-          if (inner) {
-            gsap.to(inner, {
-              y: -30,
-              ease: 'none',
-              scrollTrigger: { trigger: block, start: 'top bottom', end: 'bottom top', scrub: true },
-            });
-          }
+            },
+          },
         });
+
+        // 1. Initial dwell time — keep TO GATHER centered & sticky as user starts scrolling
+        tl.to({}, { duration: 1.4 });
+
+        // 2. Transition from TO GATHER -> TO SAVOR
+        tl.addLabel('trans1', 1.4);
+
+        // TO GATHER exits smoothly upward with subtle fade
+        tl.to(
+          phrases[0],
+          {
+            yPercent: -65,
+            opacity: 0,
+            scale: 0.96,
+            duration: 2.0,
+            ease: 'power2.inOut',
+          },
+          'trans1'
+        );
+        if (bgItems[0]) {
+          tl.to(bgItems[0], { opacity: 0, scale: 1.0, duration: 2.0, ease: 'power1.inOut' }, 'trans1');
+        }
+
+        // TO SAVOR rises upward from bottom to center with smooth opacity
+        tl.to(
+          phrases[1],
+          {
+            yPercent: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 2.0,
+            ease: 'power2.inOut',
+          },
+          'trans1+=0.2'
+        );
+        if (bgItems[1]) {
+          tl.to(bgItems[1], { opacity: 1, scale: 1.04, duration: 2.0, ease: 'power1.inOut' }, 'trans1');
+        }
+        if (trackerBar) {
+          tl.to(trackerBar, { scaleX: 0.66, duration: 2.0, ease: 'power1.inOut' }, 'trans1');
+        }
+
+        // 3. Middle dwell time — keep TO SAVOR centered & sticky
+        tl.to({}, { duration: 1.4 });
+
+        // 4. Transition from TO SAVOR -> TO CELEBRATE
+        tl.addLabel('trans2', 4.8);
+
+        // TO SAVOR exits smoothly upward with subtle fade
+        tl.to(
+          phrases[1],
+          {
+            yPercent: -65,
+            opacity: 0,
+            scale: 0.96,
+            duration: 2.0,
+            ease: 'power2.inOut',
+          },
+          'trans2'
+        );
+        if (bgItems[1]) {
+          tl.to(bgItems[1], { opacity: 0, scale: 1.0, duration: 2.0, ease: 'power1.inOut' }, 'trans2');
+        }
+
+        // TO CELEBRATE rises upward from bottom to center with smooth opacity
+        tl.to(
+          phrases[2],
+          {
+            yPercent: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 2.0,
+            ease: 'power2.inOut',
+          },
+          'trans2+=0.2'
+        );
+        if (bgItems[2]) {
+          tl.to(bgItems[2], { opacity: 1, scale: 1.04, duration: 2.0, ease: 'power1.inOut' }, 'trans2');
+        }
+        if (trackerBar) {
+          tl.to(trackerBar, { scaleX: 1.0, duration: 2.0, ease: 'power1.inOut' }, 'trans2');
+        }
+
+        // 5. Final dwell time — keep TO CELEBRATE centered & sticky before releasing pin
+        tl.to({}, { duration: 1.8 });
       }
 
       /* ---------- 5g. FOOTER — cursor-reactive headline + wordmark ---------- */
